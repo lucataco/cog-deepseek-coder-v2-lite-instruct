@@ -105,20 +105,23 @@ class Predictor(BasePredictor):
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt},
                 ]
-                prompt = self.tokenizer.apply_chat_template(
+                formatted_prompt = self.tokenizer.apply_chat_template(
                     messages, tokenize=False, add_generation_prompt=True
                 )
             except jinja2.exceptions.TemplateError:
                 messages = [
-                    {"role": "user", "content": "\n\n".join([system_prompt, prompt])}
+                    {"role": "user", "content": prompt}
                 ]
-                prompt = self.tokenizer.apply_chat_template(
+                formatted_prompt = self.tokenizer.apply_chat_template(
                     messages, tokenize=False, add_generation_prompt=True
                 )
         elif system_prompt:
             self.log(
                 "Warning: ignoring system prompt because no chat template was configured"
             )
+            formatted_prompt = prompt
+        else:
+            formatted_prompt = prompt
 
         sampling_params = SamplingParams(
             n=1,
@@ -158,4 +161,4 @@ class Predictor(BasePredictor):
             start = len(text)
 
         self.log(f"Generation took {time.time() - start:.2f}s")
-        self.log(f"Formatted prompt: {prompt}")
+        self.log(f"Formatted prompt: {formatted_prompt}")
